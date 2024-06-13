@@ -1,0 +1,51 @@
+UserID:
+  is: parameter
+  from: uriPathPattern
+  pattern: "/api/users/{userID}"
+
+UserData:
+  is: parameter
+  from: sql
+
+  connection:
+    uses: driver
+    driver: "org.postgresql.Driver"
+    url: "jdbc:postgresql://some-postgres:5432/your_database_name"
+    username: "alumno"
+    password: "alumno"
+
+  query: `
+SELECT * 
+FROM users
+WHERE id=?
+`
+
+  parms:
+  - UserID
+
+request:
+- method: GET
+
+- where: uriPathPattern
+  matches: "/api/users/{id}"
+
+- where: parameter
+  named: UserData
+  exists: true
+
+response:
+  from: template
+  template: Simula
+
+  status: 200
+
+  headers:
+  - "Content-Type: application/json; charset=UTF-8"
+
+  body: `
+  {
+     "user": {
+        "id": "${ UserData['id'] }",
+        "name": "${ jsonEncode( UserData['name'] ) }",
+     }
+  }
